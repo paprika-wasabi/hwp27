@@ -114,11 +114,13 @@ void handleClient() {
   // Check for corresponding get message  
   if (request.indexOf("GET /pollUS") >= 0) {
     Serial.println("Polling");
-    float us1, us2, us3 = -1;
+    long us1 = measureDistance(D8);
+    long us2 = measureDistance(D7);
+    long us3 = measureDistance(D3);
 
 
     // Send US data to website
-    client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
+    client.printf("{\"US1\":%.2d, \"US2\":%.2d, \"US3\":%.2d}", us1, us2, us3);
     
   // Insert code to make the d-pad control working
   // Start by pressing the buttons of the d pad and watch the serial console to see how the get requests look.
