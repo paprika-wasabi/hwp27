@@ -4,8 +4,8 @@
 #include "website.h"
 
 // Add your wifi credentials here
-const char* ssid     = "SecretAP";
-const char* password = "MySuperSecretPassword";
+const char* ssid     = "Banana";
+const char* password = "Banana1234.";
 
 // exercise.
 unsigned long delayStart;
@@ -96,6 +96,8 @@ void loop() {
   MDNS.update();
 }
 
+
+
 void handleClient() {
   // Check if a client has connected
   WiFiClient client = server.available();
@@ -107,23 +109,56 @@ void handleClient() {
 
   // Print request to serial
   Serial.print("request: ");
-  Serial.println(request); 
+  Serial.println(request);
+  int var = request.indexOf("/");
+  Serial.println();
 
   // print header message
   client.println(header);
   // Check for corresponding get message  
   if (request.indexOf("GET /pollUS") >= 0) {
+    // Serial.println("Polling");
     Serial.println("Polling");
-    long us1 = measureDistance(D8);
-    long us2 = measureDistance(D7);
-    long us3 = measureDistance(D3);
-
-
+    float us1 = measureDistance(D8) / 100;
+    float us2 = measureDistance(D7) / 100;
+    float us3 = measureDistance(D3) / 100;
+    // Insert your code here
+    
+    Serial.println("============");
+    Serial.println(us1);
+    Serial.println(us2);
+    Serial.println(us3);
     // Send US data to website
-    client.printf("{\"US1\":%.2d, \"US2\":%.2d, \"US3\":%.2d}", us1, us2, us3);
+    client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
     
   // Insert code to make the d-pad control working
   // Start by pressing the buttons of the d pad and watch the serial console to see how the get requests look.
+  char val = request.charAt(var + 1);
+  long start = millis();
+  long now;
+  switch (val) {
+    case 'l':
+      now = millis();
+      while (start - now < 300) {
+        turn(true, 0, 100);
+      }
+    case 'r':
+      now = millis();
+      while (start - now < 300) {
+        turn(false, 0, 100);
+      }
+    case 'd':
+      now = millis();
+      while (start - now < 300) {
+         drive(false, 0, 100);
+      }
+    case 'u':
+      now = millis();
+      while (start - now < 300) {
+         drive(false, 0, 100);
+      }
+  }
+  
 
   
   // Serve initial Website
