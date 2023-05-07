@@ -131,25 +131,23 @@ void handleClient() {
     // Send US data to website
     client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
     
-  // Insert code to make the d-pad control working
-  // Start by pressing the buttons of the d pad and watch the serial console to see how the get requests look.
-  char val = request.charAt(var + 1);
-  long start = millis();
-  long now;
-  switch (val) {
-    case 'l':
-      turn(true, 300, 100);
-      break;
-    case 'r':
-      turn(false, 300, 100);
-      break;
-    case 'd':
-      drive(false, 300, 100);
-      break;
-    case 'u':
-      drive(false, 300, 100);
-      break;
-  }
+    // Insert code to make the d-pad control working
+    // Start by pressing the buttons of the d pad and watch the serial console to see how the get requests look.
+    char val = request.charAt(var + 1);
+    switch (val) {
+      case 'l':
+        turn(true, 300, 100);
+        break;
+      case 'r':
+        turn(false, 300, 100);
+        break;
+      case 'd':
+        drive(false, 300, 100);
+        break;
+      case 'u':
+        drive(false, 300, 100);
+        break;
+    }
   
 
   
