@@ -138,25 +138,17 @@ void handleClient() {
   long now;
   switch (val) {
     case 'l':
-      now = millis();
-      while (start - now < 300) {
-        turn(true, 0, 100);
-      }
+      turn(true, 300, 100);
+      break;
     case 'r':
-      now = millis();
-      while (start - now < 300) {
-        turn(false, 0, 100);
-      }
+      turn(false, 300, 100);
+      break;
     case 'd':
-      now = millis();
-      while (start - now < 300) {
-         drive(false, 0, 100);
-      }
+      drive(false, 300, 100);
+      break;
     case 'u':
-      now = millis();
-      while (start - now < 300) {
-         drive(false, 0, 100);
-      }
+      drive(false, 300, 100);
+      break;
   }
   
 
