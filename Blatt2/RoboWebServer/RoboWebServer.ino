@@ -123,11 +123,12 @@ void handleClient() {
     float us2 = measureDistance(D7) / 100;
     float us3 = measureDistance(D3) / 100;
     // Insert your code here
-    
+    /*
     Serial.println("============");
     Serial.println(us1);
     Serial.println(us2);
     Serial.println(us3);
+    */
     // Send US data to website
     client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
     
@@ -145,7 +146,21 @@ void handleClient() {
         drive(false, 300, 100);
         break;
       case 'u':
-        drive(false, 300, 100);
+        drive(true, 300, 100);
+        break;
+      // teslamode preliminary implementation
+      // does bound to changes as the button is implemented in website.h
+      case 't':
+        if (us1 > 30 && us2 > 30 && us3 > 30) {
+          drive(true, 100, 100);
+        }
+        if (us1 <= 30 && us2 > 30 && us3 > 30) {}
+        if (us1 <= 30 && us2 <= 30 && us3 > 30) {}
+        if (us1 <= 30 && us2 <= 30 && us3 <= 30) {}
+        if (us1 > 30 && us2 <= 30 && us3 > 30) {}
+        if (us1 > 30 && us2 <= 30 && us3 <= 30) {}
+        if (us1 > 30 && us2 > 30 && us3 <= 30) {}
+        if (us1 <= 30 && us2 > 30 && us3 <= 30) {}
         break;
     }
   
