@@ -4,8 +4,8 @@
 #include "website.h"
 
 // Add your wifi credentials here
-const char* ssid     = "Banana";
-const char* password = "Banana1234.";
+const char* ssid     = "SecretAP";
+const char* password = "MySuperSecretPassword";
 
 // exercise.
 unsigned long delayStart;
@@ -110,65 +110,52 @@ void handleClient() {
   // Print request to serial
   Serial.print("request: ");
   Serial.println(request);
-  int var = request.indexOf("/");
   Serial.println();
 
   // print header message
   client.println(header);
+  
   // Check for corresponding get message  
   if (request.indexOf("GET /pollUS") >= 0) {
-    // Serial.println("Polling");
     Serial.println("Polling");
+    
     float us1 = measureDistance(D8) / 100;
     float us2 = measureDistance(D7) / 100;
     float us3 = measureDistance(D3) / 100;
-    // Insert your code here
-    /*
-    Serial.println("============");
-    Serial.println(us1);
-    Serial.println(us2);
-    Serial.println(us3);
-    */
+    
     // Send US data to website
     client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
-    
-    // Insert code to make the d-pad control working
-    // Start by pressing the buttons of the d pad and watch the serial console to see how the get requests look.
-    char val = request.charAt(var + 1);
-    switch (val) {
-      case 'l':
-        turn(true, 300, 100);
-        break;
-      case 'r':
-        turn(false, 300, 100);
-        break;
-      case 'd':
-        drive(false, 300, 100);
-        break;
-      case 'u':
-        drive(true, 300, 100);
-        break;
+
+  } else if (request.indexOf("GET /left") >= 0) {
+      turn(true, 300, 100);
+
+  } else if (request.indexOf("GET /right") >= 0) {
+      turn(false, 300, 100);
+
+  } else if (request.indexOf("GET /back") >= 0) {
+      drive(false, 300, 100);
+
+  } else if (request.indexOf("GET /up") >= 0) {
+      drive(true, 300, 100);
+
+  } else if (request.indexOf("GET /teslaMode") >= 0) {
       // teslamode preliminary implementation
       // does bound to changes as the button is implemented in website.h
-      case 't':
-        if (us1 > 30 && us2 > 30 && us3 > 30) {
+      float us1 = measureDistance(D8);
+      float us2 = measureDistance(D7);
+      float us3 = measureDistance(D3);
+      while (us1 > 30 && us2 > 30 && us3 > 30) {
           drive(true, 100, 100);
         }
-        if (us1 <= 30 && us2 > 30 && us3 > 30) {}
-        if (us1 <= 30 && us2 <= 30 && us3 > 30) {}
-        if (us1 <= 30 && us2 <= 30 && us3 <= 30) {}
-        if (us1 > 30 && us2 <= 30 && us3 > 30) {}
-        if (us1 > 30 && us2 <= 30 && us3 <= 30) {}
-        if (us1 > 30 && us2 > 30 && us3 <= 30) {}
-        if (us1 <= 30 && us2 > 30 && us3 <= 30) {}
-        break;
-    }
-  
-
-  
-  // Serve initial Website
+      if (us1 <= 30 && us2 > 30 && us3 > 30) {}
+      if (us1 <= 30 && us2 <= 30 && us3 > 30) {}
+      if (us1 <= 30 && us2 <= 30 && us3 <= 30) {}
+      if (us1 > 30 && us2 <= 30 && us3 > 30) {}
+      if (us1 > 30 && us2 <= 30 && us3 <= 30) {}
+      if (us1 > 30 && us2 > 30 && us3 <= 30) {}
+      if (us1 <= 30 && us2 > 30 && us3 <= 30) {}
+        
   } else {
-    // Finish HTTP-Request with a newline (thats cruical)
     client.flush();
     client.println(page);
     client.println();
@@ -226,8 +213,8 @@ void drive(bool forward, uint16_t time, uint16_t speed) {
   setMotor(forward, 0, 1);
 }
 
-void setMotor(bool forward, bool motorA, uint16_t speed) {
-    switch (motorA) {
+void setMotor(bool forward, uint16_t speed, int motor) {
+    switch (motor) {
     case 0: // motor A left.
       if (forward) {
         analogWrite(D2, speed);

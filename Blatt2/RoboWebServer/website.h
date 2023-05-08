@@ -6,6 +6,20 @@ Content-type:text/html
 const char page[] = R"=====(
 <head><meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
+        .button {
+          border: none;
+          color: white;
+          padding: 15px 32px;
+          text-align: center;
+          text-decoration: none;
+          display: inline-block;
+          font-size: 16px;
+          margin: 4px 2px;
+          cursor: pointer;
+        }
+        
+        .buttonTesla {background-color: #008CBA;}
+        
         .directional-buttons {
         width: 16rem;
         height: 16rem;
@@ -186,6 +200,8 @@ const char page[] = R"=====(
             </button>
         </div>
     </div>
+    
+    <button class="buttonTesla button" style="margin-top: 30px" id='teslaMode' onclick='gamepad(this)' >Tesla Mode</button>
 
     <div class="container" style="margin-top: 30px">
         <span style="margin-right: 10px;">US1:</span>
