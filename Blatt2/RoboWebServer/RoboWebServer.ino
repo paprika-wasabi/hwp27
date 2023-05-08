@@ -4,13 +4,17 @@
 #include "website.h"
 
 // Add your wifi credentials here
-const char* ssid     = "SecretAP";
-const char* password = "MySuperSecretPassword";
+const char* ssid     = "FRITZ!Box 6591 Cable FY";
+const char* password = "18659835441973282511";
 
 // exercise.
 unsigned long delayStart;
 unsigned long duration;
 bool delayRunning = false;
+bool teslaMode = false;
+float us1 = -1;
+float us2 = -1;
+float us3 = -1;
 
 // Webserver on port 80 (standard http port)
 WiFiServer server(80);
@@ -89,13 +93,13 @@ void setup() {
   server.begin();
 }
 
+
 void loop() {
   // Handle clients
   handleClient();
   // Update MDNS
   MDNS.update();
 }
-
 
 
 void handleClient() {
@@ -116,15 +120,56 @@ void handleClient() {
   client.println(header);
   
   // Check for corresponding get message  
-  if (request.indexOf("GET /pollUS") >= 0) {
+  if (request.indexOf("GET /teslaMode") >= 0) {
+    teslaMode = !teslaMode;
+  }
+  if (teslaMode) {
+      // teslamode preliminary implementation
+      // does bound to changes as the button is implemented in website.h
+      updateUS();
+      if (us1 > 30 && us2 > 30 && us3 > 30) {
+        drive(true, 200, 100);
+        }
+      if (us1 <= 30 && us2 > 30 && us3 > 30) {
+        turn(false, 200, 100);
+      }
+      if (us1 <= 30 && us2 <= 30 && us3 > 30) {
+        turn(false, 200, 100);
+      }
+      if (us1 <= 30 && us2 <= 30 && us3 <= 30) {
+        drive(false, 200, 100);
+        if (us1 > us3) {
+          turn(true, 100, 100);
+        } else {
+          turn(false, 100, 100);
+        }
+      }
+      if (us1 > 30 && us2 <= 30 && us3 > 30) {
+        drive(false, 100, 100);
+        if (us1 > us3) {
+          turn(true, 100, 100);
+        } else {
+          turn(false, 100, 100);
+        }
+      }
+      if (us1 > 30 && us2 <= 30 && us3 <= 30) {
+        turn(true, 200, 100);
+      }
+      if (us1 > 30 && us2 > 30 && us3 <= 30) {
+        turn(true, 200, 100);
+      }
+      if (us1 <= 30 && us2 > 30 && us3 <= 30) {
+        drive(true, 100, 100);
+      }
+  
+  } else if (request.indexOf("GET /pollUS") >= 0) {
     Serial.println("Polling");
     
-    float us1 = measureDistance(D8) / 100;
-    float us2 = measureDistance(D7) / 100;
-    float us3 = measureDistance(D3) / 100;
+    // Get US information
+    updateUS();
     
     // Send US data to website
-    client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1, us2, us3);
+    client.printf("{\"US1\":%.2f, \"US2\":%.2f, \"US3\":%.2f}", us1 / 100, us2 / 100, us3 / 100);
 
   } else if (request.indexOf("GET /left") >= 0) {
       turn(true, 300, 100);
@@ -137,29 +182,19 @@ void handleClient() {
 
   } else if (request.indexOf("GET /up") >= 0) {
       drive(true, 300, 100);
-
-  } else if (request.indexOf("GET /teslaMode") >= 0) {
-      // teslamode preliminary implementation
-      // does bound to changes as the button is implemented in website.h
-      float us1 = measureDistance(D8);
-      float us2 = measureDistance(D7);
-      float us3 = measureDistance(D3);
-      while (us1 > 30 && us2 > 30 && us3 > 30) {
-          drive(true, 100, 100);
-        }
-      if (us1 <= 30 && us2 > 30 && us3 > 30) {}
-      if (us1 <= 30 && us2 <= 30 && us3 > 30) {}
-      if (us1 <= 30 && us2 <= 30 && us3 <= 30) {}
-      if (us1 > 30 && us2 <= 30 && us3 > 30) {}
-      if (us1 > 30 && us2 <= 30 && us3 <= 30) {}
-      if (us1 > 30 && us2 > 30 && us3 <= 30) {}
-      if (us1 <= 30 && us2 > 30 && us3 <= 30) {}
         
   } else {
     client.flush();
     client.println(page);
     client.println();
   }
+}
+
+
+void updateUS(){
+  us1 = measureDistance(D8);
+  us2 = measureDistance(D7);
+  us3 = measureDistance(D3);
 }
 
 
