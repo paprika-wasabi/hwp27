@@ -4,8 +4,8 @@
 #include "website.h"
 
 // Add your wifi credentials here
-const char* ssid     = "FRITZ!Box 6591 Cable FY";
-const char* password = "18659835441973282511";
+const char* ssid     = "SecretAP";
+const char* password = "MySuperSecretPassword";
 
 // exercise.
 unsigned long delayStart;
