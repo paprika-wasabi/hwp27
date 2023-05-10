@@ -48,9 +48,6 @@ void setup() {
   pinMode(D1, OUTPUT);
   pinMode(D2, OUTPUT);
   pinMode(LED_BUILTIN, OUTPUT);
-  // drive(true, 1000, 100);
-  // turn(true, 1000, 100);
-  // turn(false, 1000, 100);
 
   // Init motor pins as output
   for (size_t i = 0; i < sizeof(motorPins)/sizeof(motorPins[0]); i++) {
@@ -124,19 +121,23 @@ void handleClient() {
     teslaMode = !teslaMode;
   }
   if (teslaMode) {
-      // teslamode preliminary implementation
-      // does bound to changes as the button is implemented in website.h
+      // Tesla Mode implementation.
       updateUS();
       if (us1 > 30 && us2 > 30 && us3 > 30) {
+        // No obstacles near. Drive forward.
         drive(true, 200, 100);
         }
       if (us1 <= 30 && us2 > 30 && us3 > 30) {
-        turn(false, 200, 100);
+        // Obstacle on the left. Slightly turn right.
+        turn(false, 100, 100);
       }
       if (us1 <= 30 && us2 <= 30 && us3 > 30) {
+        // Obstacle on the left and ahead. Turn right.
         turn(false, 200, 100);
       }
       if (us1 <= 30 && us2 <= 30 && us3 <= 30) {
+        // Obstacles left, ahead and on the right. Drive backwards
+        // and slightly turn to the side where the obstacle is farthest away.
         drive(false, 200, 100);
         if (us1 > us3) {
           turn(true, 100, 100);
@@ -145,6 +146,8 @@ void handleClient() {
         }
       }
       if (us1 > 30 && us2 <= 30 && us3 > 30) {
+        // Obstacle ahead. Slightly drive backwards and turn to the side where
+        // the US shows more open space.
         drive(false, 100, 100);
         if (us1 > us3) {
           turn(true, 100, 100);
@@ -153,12 +156,15 @@ void handleClient() {
         }
       }
       if (us1 > 30 && us2 <= 30 && us3 <= 30) {
+        // Obstacle on the right and ahead. Turn left.
         turn(true, 200, 100);
       }
       if (us1 > 30 && us2 > 30 && us3 <= 30) {
-        turn(true, 200, 100);
+        // Obstacle on the right. Slightly turn left.
+        turn(true, 100, 100);
       }
       if (us1 <= 30 && us2 > 30 && us3 <= 30) {
+        // Obstacles on the right and left. Drive forward more slowly.
         drive(true, 100, 100);
       }
   
@@ -192,6 +198,7 @@ void handleClient() {
 
 
 void updateUS(){
+  // Update the US sensors.
   us1 = measureDistance(D8);
   us2 = measureDistance(D7);
   us3 = measureDistance(D3);
@@ -213,6 +220,7 @@ float measureDistance(uint8_t pin) {
   return microsecondsToCentimeters(duration); 
 }
 
+
 void turn(bool left, uint16_t time, uint16_t speed) {
   delayRunning = true;
   delayStart = millis();
@@ -233,6 +241,7 @@ void turn(bool left, uint16_t time, uint16_t speed) {
   setMotor(true, 0, 1);
 }
 
+
 void drive(bool forward, uint16_t time, uint16_t speed) {
   delayRunning = true;
   delayStart = millis();
@@ -247,6 +256,7 @@ void drive(bool forward, uint16_t time, uint16_t speed) {
   setMotor(forward, 0, 0);
   setMotor(forward, 0, 1);
 }
+
 
 void setMotor(bool forward, uint16_t speed, int motor) {
     switch (motor) {
