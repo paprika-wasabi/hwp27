@@ -3,30 +3,53 @@ long time;
 bool toggle1 = 0;
 
 void setup() {
-  setTimer1Freq();
+  setTimer1Freq(300);
+  pinMode(10, OUTPUT);
 }
 
-void setTimer1Freq(){
+void setTimer1Freq(int freq) {
    
-  //set pins as outputs
-  pinMode(12, OUTPUT);
+  // //set pins as outputs
+  // pinMode(10, OUTPUT);
 
-  cli();//stop interrupts
+  // cli();//stop interrupts
 
-  //set timer1 interrupt at 1Hz
-  TCCR1A = 0;// set entire TCCR1A register to 0
-  TCCR1B = 0;// same for TCCR1B
-  TCNT1  = 0;//initialize counter value to 0
-  // set compare match register for 1hz increments
-  OCR1A = 14;// = (16*10^6) / (1046*1024) - 1 (must be <65536)
-  // turn on CTC mode
-  TCCR1B |= (1 << WGM12);
-  // Set CS12 and CS10 bits for 1024 prescaler
-  TCCR1B |= (1 << CS12) | (1 << CS10);  
-  // enable timer compare interrupt
-  TIMSK1 |= (1 << OCIE1A);
+  // //set timer1 interrupt at 1Hz
+  // TCCR1A = 0;// set entire TCCR1A register to 0
+  // TCCR1B = 0;// same for TCCR1B
+  // TCNT1  = 0;//initialize counter value to 0
+  // // set compare match register for 1hz increments
+  // OCR1A = 14;// = (16*10^6) / (1046*1024) - 1 (must be <65536)
+  // // turn on CTC mode
+  // TCCR1B |= (1 << WGM12);
+  // // Set CS12 and CS10 bits for 1024 prescaler
+  // TCCR1B |= (1 << CS12) | (1 << CS10);  
+  // // enable timer compare interrupt
+  // TIMSK1 |= (1 << OCIE1A);
 
-  sei();//allow interrupts
+  // sei();//allow interrupts
+
+  //________________________________________________________________
+  cli(); // stop interrupts
+
+  // Set timer1 in CTC mode with TOP = OCR1A
+  TCCR1A = 0;              // Clear TCCR1A register
+  TCCR1B = (1 << WGM12);   // Set WGM12 bit for CTC mode
+  TCCR1B |= (1 << CS10);   // Set prescaler to 1 (no prescaling)
+  uint16_t temp = ((16 * pow(10,6)) / freq * 1024) - 1;
+  if (temp > (pow(2, 16)) {
+    PORTB &= ~(1 << 4);
+    TCCR1A = 0; // Clear TCCR1A register
+    TCCR1B = 0; // Clear TCCR1B register
+  }
+  OCR1A = temp;            // Set OCR1A value for desired frequency (1046 Hz)
+  // 14 = (16*10^6) / (1046*1024) - 1.
+
+  // Toggle pin 10 on compare match
+  TCCR1A |= (1 << COM1B0);
+
+  sei(); // allow interrupts
+
 }
 
 void setPin13(bool param) {
@@ -49,14 +72,14 @@ void Blink() {
 void loop() {
 }
 
-ISR(TIMER1_COMPA_vect) {
-  if (toggle1) {
-    //digitalWrite(13 , HIGH);
-    PORTB |= (1 << 4);
-    toggle1 = 0;
-  } else {
-    //digitalWrite(13 , LOW);
-    PORTB &= ~(1 << 4);
-    toggle1 = 1;
-  }
-}
+// ISR(TIMER1_COMPA_vect) {
+//   if (toggle1) {
+//     //digitalWrite(13 , HIGH);
+//     PORTB |= (1 << 4);
+//     toggle1 = 0;
+//   } else {
+//     //digitalWrite(13 , LOW);
+//     PORTB &= ~(1 << 4);
+//     toggle1 = 1;
+//   }
+// }
