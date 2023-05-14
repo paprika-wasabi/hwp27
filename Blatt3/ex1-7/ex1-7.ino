@@ -1,41 +1,53 @@
+#include <LiquidCrystal.h>
+#define DEBUG_MODE true
 
 long time;
 bool toggle1 = 0;
 volatile uint32_t tCount5 = 0;
 
 
+void debugprint(char* const msg) {
+  if (DEBUG_MODE) {
+    Serial.println(msg);
+  }
+}
 
 void setup() {
-  setTimer1Freq(300);
+  Serial.begin(9600);
+  debugprint("Timer1");
+  setTimer1Freq(1046);
+  debugprint("Timer 2");
   setTimer2();
-  pinMode(10, OUTPUT);
+  debugprint("Timer2 out");
+  debugprint("68");
 }
 
 void setTimer1Freq(int freq) {
-   
-  // //set pins as outputs
-  // pinMode(10, OUTPUT);
+  /* 
+    set pins as outputs
+    pinMode(10, OUTPUT);
 
-  // cli();//stop interrupts
+    cli();//stop interrupts
 
-  // //set timer1 interrupt at 1Hz
-  // TCCR1A = 0;// set entire TCCR1A register to 0
-  // TCCR1B = 0;// same for TCCR1B
-  // TCNT1  = 0;//initialize counter value to 0
-  // // set compare match register for 1hz increments
-  // OCR1A = 14;// = (16*10^6) / (1046*1024) - 1 (must be <65536)
-  // // turn on CTC mode
-  // TCCR1B |= (1 << WGM12);
-  // // Set CS12 and CS10 bits for 1024 prescaler
-  // TCCR1B |= (1 << CS12) | (1 << CS10);  
-  // // enable timer compare interrupt
-  // TIMSK1 |= (1 << OCIE1A);
+    //set timer1 interrupt at 1Hz
+    TCCR1A = 0;// set entire TCCR1A register to 0
+    TCCR1B = 0;// same for TCCR1B
+    TCNT1  = 0;//initialize counter value to 0
+    // set compare match register for 1hz increments
+    OCR1A = 14;// = (16*10^6) / (1046*1024) - 1 (must be <65536)
+    // turn on CTC mode
+    TCCR1B |= (1 << WGM12);
+    // Set CS12 and CS10 bits for 1024 prescaler
+    TCCR1B |= (1 << CS12) | (1 << CS10);  
+    // enable timer compare interrupt
+    TIMSK1 |= (1 << OCIE1A);
 
-  // sei();//allow interrupts
+    sei();//allow interrupts
 
-  //________________________________________________________________
+    ________________________________________________________________
+  */  
   cli(); // stop interrupts
-
+  debugprint("SetTimer1");
   // Set timer1 in CTC mode with TOP = OCR1A
   TCCR1A = 0;              // Clear TCCR1A register
   TCCR1B = (1 << WGM12);   // Set WGM12 bit for CTC mode
@@ -53,26 +65,35 @@ void setTimer1Freq(int freq) {
   TCCR1A |= (1 << COM1B0);
 
   sei(); // allow interrupts
+  pinMode(10, OUTPUT);
 
 }
 
 
 void setTimer2() {
+  debugprint("SetTimer2");
+  Serial.print("SetTimer2"); // Correct typo
   cli();
-  TCCR2A = 0;             // set entire TCCR2A register to 0
-  TCCR2B = 0;             // set entire TCCR2B register to 0
-  TCNT2  = 0;             // initialize counter value to 0
-  OCR2A = 249;            // set compare match register for 1 ms interrupt
-  TCCR2B |= (1 << WGM21);  // turn on CTC mode
-  TCCR2B |= (1 << CS22) | (1 << CS21) | (1 << CS20); // set prescaler to 1024
-  TIMSK2 |= (1 << OCIE2A);
+  TCCR2A = (1 << WGM21) | (1 << WGM20);
+  TCCR2B = (1 << WGM22) | (1 << CS20);
+  TCNT2 = 0;
+  OCR2A = 250;
 
-sei();
-Serial.print(1234);
+  TIMSK2 = 0;
+  TIMSK2 |= (1 << TOIE2);
+
+  sei();
 }
 
-ISR(TIMER2_COMPA_vect) {
+ISR(TIMER2_OVF_vect) {
+  // debugprint("Interupt in");
+  cli();
+  if (tCount5 > 250) {
+    tCount5 = 0;
+  }
   tCount5++;
+  debugprint("Interrupt out");
+  sei();
   /*if (toggle1) {
      //digitalWrite(13 , HIGH);
     PORTB |= (1 << 4);
@@ -84,7 +105,8 @@ ISR(TIMER2_COMPA_vect) {
      toggle1 = 1;
      tCount5++;
    }
-*/}
+   */
+}
 
 
 void setPin13(bool param) {
