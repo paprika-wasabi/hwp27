@@ -1,14 +1,12 @@
-
+#include <Arduino.h>
 #define DEBUG_MODE true
 
 long time;
 bool toggle1 = 0;
 volatile uint32_t tCount5 = 0;
-uint16_t durations[10] = {2000, 1000, 1000, 1000,
-                          1000, 1000, 1000, 1000, 1000, 1000};
+uint16_t durations[10] = {2000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000};
 uint16_t notes[10] = {440, 494, 523, 587, 659, 698, 784, 880, 988, 1047};
 volatile uint8_t melodyIdx = 0;
-bool settimer2actv = true;
 
 void debugprint(char* const msg) {
   if (DEBUG_MODE) {
@@ -66,7 +64,6 @@ void setTimer1Freq(int freq) {
 
 void setTimer2(bool activate) {
   debugprint("SetTimer2");
-  // Serial.print("SetTimer2"); // Correct typo
   if (activate) {
     cli();
     TCCR2A = (1 << WGM21) | (1 << WGM20);
@@ -99,18 +96,18 @@ ISR(TIMER2_OVF_vect) {
   cli();
   if (tCount5 >= durations[melodyIdx]) {
     tCount5 = 0;
-    Serial.print(tCount5);
-    Serial.print("  ");
-    Serial.println(melodyIdx);
-    Serial.println();
+    // Serial.print(tCount5);
+    // Serial.print("  ");
+    // Serial.println(melodyIdx);
+    // Serial.println();
     melodyIdx++;
     wait(10);
 
   }
   tCount5++;
   sei();
-  Serial.println(melodyIdx);
-  // debugprint("Interupt Routine out");
+  // Serial.println(melodyIdx);
+  debugprint("Interupt Routine out");
 }
 
 
@@ -134,45 +131,47 @@ void Blink() {
 void playMelody() {
   /*
   melodyIdx = 0;
-  pinMode(10, OUTPUT);
-  setTimer1Freq(notes[melodyIdx]);
-  setTimer2(true);
-  // setTimer2(settimer2actv);
-  while (melodyIdx < 10) {
+    pinMode(10, OUTPUT);
     setTimer1Freq(notes[melodyIdx]);
-    // setTimer2(false);
-  }
-  // settimer2actv = false;
-  setTimer2(false);
-  Serial.println(notes[melodyIdx]);
+    setTimer2(true);
+    // setTimer2(settimer2actv);
+    while (melodyIdx < 10) {
+      setTimer1Freq(notes[melodyIdx]);
+      // setTimer2(false);
+    }
+    // settimer2actv = false;
+    setTimer2(false);
+    Serial.println(notes[melodyIdx]);
   */
   pinMode(10, OUTPUT);
   Serial.println(melodyIdx);
-  setTimer2(true);
+  
   while (melodyIdx < 10) {
+    setTimer2(true);
     Serial.println(notes[melodyIdx]);
     setTimer1Freq(notes[melodyIdx]);
     delay(durations[melodyIdx]);
     delay(10); // Optional delay between notes
+    setTimer2(false);
   }
-  setTimer2(false);
+  
 }
 
 void setup() {
   Serial.begin(9600);
-  debugprint("Setup start");
-  playMelody();
-  debugprint("Setup end");
-  /*
-  Serial.begin(9600);
+  // debugprint("Setup start");
   pinMode(10, OUTPUT);
+  // playMelody();
+  // debugprint("Setup end");
+  
+  Serial.begin(9600);
+  
   // debugprint("Timer1");
   setTimer1Freq(notes[melodyIdx]);
   // debugprint("Timer 2");
  
-  setTimer2();
+  setTimer2(true);
   // debugprint("Timer2 out");
-  */
 }
 
 void loop() {}
