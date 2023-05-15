@@ -1,13 +1,14 @@
-#include <LiquidCrystal.h>
+
 #define DEBUG_MODE true
 
 long time;
 bool toggle1 = 0;
 volatile uint32_t tCount5 = 0;
-uint16_t durations[10] = {1000, 1000, 1000, 1000,
+uint16_t durations[10] = {2000, 1000, 1000, 1000,
                           1000, 1000, 1000, 1000, 1000, 1000};
-uint16_t notes[10] = {261, 293, 329, 349, 392, 440, 493, 523, 587, 55};
+uint16_t notes[10] = {440, 494, 523, 587, 659, 698, 784, 880, 988, 1047};
 volatile uint8_t melodyIdx = 0;
+bool settimer2actv = true;
 
 void debugprint(char* const msg) {
   if (DEBUG_MODE) {
@@ -15,15 +16,6 @@ void debugprint(char* const msg) {
   }
 }
 
-void setup() {
-  Serial.begin(9600);
-  debugprint("Timer1");
-  setTimer1Freq(notes[melodyIdx]);
-  debugprint("Timer 2");
-  setTimer2();
-  debugprint("Timer2 out");
-  debugprint("68");
-}
 
 void setTimer1Freq(int freq) {
   /* 
@@ -50,12 +42,12 @@ void setTimer1Freq(int freq) {
     ________________________________________________________________
   */  
   cli(); // stop interrupts
-  debugprint("SetTimer1");
+  // debugprint("SetTimer1");
   // Set timer1 in CTC mode with TOP = OCR1A
   TCCR1A = 0;              // Clear TCCR1A register
   TCCR1B = (1 << WGM12);   // Set WGM12 bit for CTC mode
   TCCR1B |= (1 << CS10);   // Set prescaler to 1 (no prescaling)
-  uint16_t temp = (16 * pow(10,6)) / (freq * 1024) - 1;
+  uint16_t temp = (16e6) / (freq * 1024) - 1;
   if (temp > ((uint16_t) pow(2, 16))) {
     PORTB &= ~(1 << 4);
     TCCR1A = 0; // Clear TCCR1A register
@@ -68,54 +60,57 @@ void setTimer1Freq(int freq) {
   TCCR1A |= (1 << COM1B0);
 
   sei(); // allow interrupts
-  pinMode(10, OUTPUT);
+  
+
+}
+
+void setTimer2(bool activate) {
+  debugprint("SetTimer2");
+  // Serial.print("SetTimer2"); // Correct typo
+  if (activate) {
+    cli();
+    TCCR2A = (1 << WGM21) | (1 << WGM20);
+    TCCR2B = (1 << WGM22) | (1 << CS20);
+    TCNT2 = 0;
+    OCR2A = 255;
+
+    TIMSK2 = 0;
+    TIMSK2 |= (1 << TOIE2);
+
+    sei();
+  } else {
+    cli();
+    TCCR2A = 0;
+    TCCR2B = 0;
+    TIMSK2 = 0;
+    sei();
+  }
 
 }
 
 
-void setTimer2() {
-  debugprint("SetTimer2");
-  Serial.print("SetTimer2"); // Correct typo
-  cli();
-  TCCR2A = (1 << WGM21) | (1 << WGM20);
-  TCCR2B = (1 << WGM22) | (1 << CS20);
-  TCNT2 = 0;
-  OCR2A = 250;
-
-  TIMSK2 = 0;
-  TIMSK2 |= (1 << TOIE2);
-
-  sei();
+void wait(unsigned long ms) {
+  unsigned long now = millis();
+  while (millis() < now + ms) {}
 }
 
 ISR(TIMER2_OVF_vect) {
-  // debugprint("Interupt in");
+  // debugprint("Interupt Routine in");
   cli();
   if (tCount5 >= durations[melodyIdx]) {
     tCount5 = 0;
+    Serial.print(tCount5);
+    Serial.print("  ");
+    Serial.println(melodyIdx);
+    Serial.println();
     melodyIdx++;
+    wait(10);
 
-    if (melodyIdx > 9) {
-      melodyIdx = 0;
-    }
-    
-    setTimer1Freq(notes[melodyIdx]);
-    delay(10);
   }
   tCount5++;
   sei();
-  /*if (toggle1) {
-     //digitalWrite(13 , HIGH);
-    PORTB |= (1 << 4);
-     toggle1 = 0;
-     tCount5++;
-   } else {
-  //digitalWrite(13 , LOW);
-     PORTB &= ~(1 << 4);
-     toggle1 = 1;
-     tCount5++;
-   }
-   */
+  Serial.println(melodyIdx);
+  // debugprint("Interupt Routine out");
 }
 
 
@@ -136,18 +131,48 @@ void Blink() {
   }
 }
 
-void loop() {
-  Serial.println(tCount5);
+void playMelody() {
+  /*
+  melodyIdx = 0;
+  pinMode(10, OUTPUT);
+  setTimer1Freq(notes[melodyIdx]);
+  setTimer2(true);
+  // setTimer2(settimer2actv);
+  while (melodyIdx < 10) {
+    setTimer1Freq(notes[melodyIdx]);
+    // setTimer2(false);
+  }
+  // settimer2actv = false;
+  setTimer2(false);
+  Serial.println(notes[melodyIdx]);
+  */
+  pinMode(10, OUTPUT);
+  Serial.println(melodyIdx);
+  setTimer2(true);
+  while (melodyIdx < 10) {
+    Serial.println(notes[melodyIdx]);
+    setTimer1Freq(notes[melodyIdx]);
+    delay(durations[melodyIdx]);
+    delay(10); // Optional delay between notes
+  }
+  setTimer2(false);
 }
 
-// ISR(TIMER1_COMPA_vect) {
-//   if (toggle1) {
-//     //digitalWrite(13 , HIGH);
-//     PORTB |= (1 << 4);
-//     toggle1 = 0;
-//   } else {
-//     //digitalWrite(13 , LOW);
-//     PORTB &= ~(1 << 4);
-//     toggle1 = 1;
-//   }
-// }
+void setup() {
+  Serial.begin(9600);
+  debugprint("Setup start");
+  playMelody();
+  debugprint("Setup end");
+  /*
+  Serial.begin(9600);
+  pinMode(10, OUTPUT);
+  // debugprint("Timer1");
+  setTimer1Freq(notes[melodyIdx]);
+  // debugprint("Timer 2");
+ 
+  setTimer2();
+  // debugprint("Timer2 out");
+  */
+}
+
+void loop() {}
