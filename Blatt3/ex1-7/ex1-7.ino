@@ -4,7 +4,10 @@
 long time;
 bool toggle1 = 0;
 volatile uint32_t tCount5 = 0;
-
+uint16_t durations[10] = {1000, 1000, 1000, 1000,
+                          1000, 1000, 1000, 1000, 1000, 1000};
+uint16_t notes[10] = {261, 293, 329, 349, 392, 440, 493, 523, 587, 55};
+volatile uint8_t melodyIdx = 0;
 
 void debugprint(char* const msg) {
   if (DEBUG_MODE) {
@@ -15,7 +18,7 @@ void debugprint(char* const msg) {
 void setup() {
   Serial.begin(9600);
   debugprint("Timer1");
-  setTimer1Freq(1046);
+  setTimer1Freq(notes[melodyIdx]);
   debugprint("Timer 2");
   setTimer2();
   debugprint("Timer2 out");
@@ -88,11 +91,18 @@ void setTimer2() {
 ISR(TIMER2_OVF_vect) {
   // debugprint("Interupt in");
   cli();
-  if (tCount5 > 250) {
+  if (tCount5 >= durations[melodyIdx]) {
     tCount5 = 0;
+    melodyIdx++;
+
+    if (melodyIdx > 9) {
+      melodyIdx = 0;
+    }
+    
+    setTimer1Freq(notes[melodyIdx]);
+    delay(10);
   }
   tCount5++;
-  debugprint("Interrupt out");
   sei();
   /*if (toggle1) {
      //digitalWrite(13 , HIGH);
