@@ -74,27 +74,6 @@ void setTimer1Freq(int freq) {
 void setTimer2(bool activate) {
   debugprint("SetTimer2");
   
-  // if (activate) {
-  //   cli();
-  //   // Reset the initial drivers
-  //   TCCR2A = 0;
-  //   TCCR2B = 0;
-  //   TCCR2A = (1 << WGM21) | (1 << WGM20);
-  //   TCCR2B = (1 << WGM22) | (1 << CS20);
-  //   TCNT2 = 0;
-  //   OCR2A = 255;
-
-  //   TIMSK2 = 0;
-  //   TIMSK2 |= (1 << TOIE2);
-
-  //   sei();
-  // } else {
-  //   cli();
-  //   TCCR2A = 0;
-  //   TCCR2B = 0;
-  //   TIMSK2 = 0;
-  //   sei();
-  // }
   if (activate) {
     cli();
     // Reset the initial drivers
@@ -107,8 +86,8 @@ void setTimer2(bool activate) {
     
     // Set Frequency so that it interrupts every 1 ms
     OCR2A = 255;
-    timer2_pin_port = portOutputRegister(digitalPinToPort(10));
-    timer2_pin_mask = digitalPinToBitMask(10);
+    // timer2_pin_port = portOutputRegister(digitalPinToPort(10));
+    // timer2_pin_mask = digitalPinToBitMask(10);
     TIMSK2 = 0;
     TIMSK2 |= (1 << TOIE2);
 
@@ -142,6 +121,7 @@ ISR(TIMER1_COMPA_vect) {
 }
 */
 
+// simple waiting function
 void wait(unsigned long ms) {
   unsigned long now = millis();
   while (millis() < now + ms) {}
@@ -170,9 +150,6 @@ ISR(TIMER2_OVF_vect) {
   sei();
   
   
-}
-uint32_t calculateDuration() {
-
 }
 
 void setPin13(bool param) {
@@ -223,6 +200,7 @@ void playMelody() {
     // wait(10); // Optional delay between notes
     setTimer2(false);
   }
+  
   setTimer2(false);
   Serial.println(melodyIdx);
   setTimer1Freq(0);
@@ -249,6 +227,6 @@ void setup() {
 }
 
 void loop() {
-  Serial.println(tCount5);
-  wait(1000);
+  // Serial.println(tCount5);
+  // wait(1000);
 }
